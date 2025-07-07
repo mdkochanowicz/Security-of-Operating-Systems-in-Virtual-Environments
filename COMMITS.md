@@ -6,7 +6,7 @@ Repozytorium zawiera wersjonowanie pliku Word z pracą magisterską. Poniżej zn
 
 ## 📌 Format commitów
 
-<typ>: <krótki opis zmiany>
+<wybrany_typ>: <krótki opis zmiany>
 
 ---
 
