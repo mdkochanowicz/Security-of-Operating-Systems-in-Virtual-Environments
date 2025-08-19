@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0" version="28.0.4">
+  <diagram name="Page-1" id="Vp0BlUAL8hpzOHeOrN3Z">
+    <mxGraphModel dx="1247" dy="938" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" parent="1" source="5wF4fv0J0af5MoTNE0AJ-1" target="5wF4fv0J0af5MoTNE0AJ-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-1" value="&lt;div&gt;Host (Windows)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=22;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
+          <mxGeometry x="60" y="200" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-2" value="&lt;div&gt;Schowek&lt;/div&gt;&lt;div&gt;(tekst)&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a0522d;fontColor=#ffffff;strokeColor=#6D1F00;" parent="1" vertex="1">
+          <mxGeometry x="80" y="270" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-3" value="&#xa;Współdzielone foldery (pliki)&#xa;&#xa;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a0522d;fontColor=#ffffff;strokeColor=#6D1F00;" parent="1" vertex="1">
+          <mxGeometry x="210" y="270" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-5" value="&lt;div&gt;Warstwa hypervisora&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;Kanały poza płaszczyzną sieci&lt;/i&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
+          <mxGeometry x="380" y="190" width="120" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shape=link;" parent="1" source="5wF4fv0J0af5MoTNE0AJ-7" target="5wF4fv0J0af5MoTNE0AJ-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-7" value="&lt;div&gt;Gość (Windows/Ubuntu)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=22;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
+          <mxGeometry x="550" y="200" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-8" value="&lt;div&gt;Schowek&lt;/div&gt;&lt;div&gt;(tekst)&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a0522d;fontColor=#ffffff;strokeColor=#6D1F00;" parent="1" vertex="1">
+          <mxGeometry x="570" y="270" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5wF4fv0J0af5MoTNE0AJ-9" value="&#xa;Współdzielone foldery (pliki)&#xa;&#xa;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a0522d;fontColor=#ffffff;strokeColor=#6D1F00;" parent="1" vertex="1">
+          <mxGeometry x="700" y="270" width="110" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
