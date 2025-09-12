@@ -1,0 +1,24 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0" version="28.2.1">
+  <diagram name="Page-1" id="HHoPOvi5-fTRaKgphjrS">
+    <mxGraphModel dx="1257" dy="938" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VyvOBXi4zYoO4qcPIi6Q-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=light-dark(#000000,#000000);" edge="1" parent="1" source="VyvOBXi4zYoO4qcPIi6Q-1" target="VyvOBXi4zYoO4qcPIi6Q-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VyvOBXi4zYoO4qcPIi6Q-4" value="Wektor ataku/podatność" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="VyvOBXi4zYoO4qcPIi6Q-3">
+          <mxGeometry x="0.1674" y="-2" relative="1" as="geometry">
+            <mxPoint x="2" y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VyvOBXi4zYoO4qcPIi6Q-1" value="Użytkownik z ograniczonymi uprawnieniami" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" vertex="1" parent="1">
+          <mxGeometry x="365" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VyvOBXi4zYoO4qcPIi6Q-2" value="Podniesienie uprawnień" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
+          <mxGeometry x="358" y="340" width="135" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
