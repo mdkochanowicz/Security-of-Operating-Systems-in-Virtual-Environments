@@ -9,7 +9,7 @@
             <mxPoint x="190" y="69.99999999999989" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-13" value="&lt;div&gt;dodanie użytkownika do grupy kmem&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-11">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-13" value="&lt;div&gt;dodanie użytkownika do grupy kmem&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBorderColor=light-dark(#000000,#000000);" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-11">
           <mxGeometry x="0.6954" y="-1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -19,7 +19,7 @@
             <mxPoint x="190" y="289.9999999999999" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-15" value="&amp;nbsp; &amp;nbsp; Próba dostępu do /dev/mem" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-14">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-15" value="&amp;nbsp;Próba dostępu do /dev/mem" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBorderColor=light-dark(#000000,#000000);" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-14">
           <mxGeometry x="-0.2641" y="-1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
