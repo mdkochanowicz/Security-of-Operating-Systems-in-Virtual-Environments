@@ -1,0 +1,54 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0" version="28.2.1">
+  <diagram name="Page-1" id="HHoPOvi5-fTRaKgphjrS">
+    <mxGraphModel dx="867" dy="647" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="zY-tMj56ANNCXmde_FCD-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;strokeColor=light-dark(#000000,#000000);startArrow=none;startFill=0;" edge="1" parent="1" source="VyvOBXi4zYoO4qcPIi6Q-1" target="zY-tMj56ANNCXmde_FCD-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#000000);startArrow=none;startFill=0;" edge="1" parent="1" source="VyvOBXi4zYoO4qcPIi6Q-1" target="zY-tMj56ANNCXmde_FCD-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VyvOBXi4zYoO4qcPIi6Q-1" value="Atakujący" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" parent="1" vertex="1">
+          <mxGeometry x="130" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#000000);startArrow=none;startFill=0;" edge="1" parent="1" source="zY-tMj56ANNCXmde_FCD-16" target="zY-tMj56ANNCXmde_FCD-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-28" value="zakłócenie działania komórek RAM" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-26">
+          <mxGeometry x="-0.6179" y="2" relative="1" as="geometry">
+            <mxPoint x="-2" y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-16" value="Maszyna wirtualna" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" vertex="1" parent="1">
+          <mxGeometry x="30" y="280" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#000000);startArrow=none;startFill=0;" edge="1" parent="1" source="zY-tMj56ANNCXmde_FCD-17" target="zY-tMj56ANNCXmde_FCD-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-17" value="Fizyczny komputer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" vertex="1" parent="1">
+          <mxGeometry x="200" y="280" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-21" value="&lt;div&gt;Atak Rowhammer&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;labelBackgroundColor=default;labelBorderColor=light-dark(#000000,#000000);" vertex="1" parent="1">
+          <mxGeometry x="130" y="220" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-22" value="potencjalna eskalacja jądra" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
+          <mxGeometry x="32.5" y="440" width="145" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-23" value="potencjalna eskalacja jądra" style="ellipse;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
+          <mxGeometry x="202.5" y="440" width="145" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#000000);startArrow=none;startFill=0;" edge="1" parent="1" source="zY-tMj56ANNCXmde_FCD-25" target="zY-tMj56ANNCXmde_FCD-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-25" value="Ograniczenia przez warstę hipernadzorcy" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;" vertex="1" parent="1">
+          <mxGeometry x="45" y="380" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-31" value="zakłócenie działania komórek RAM" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="270" y="390" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
