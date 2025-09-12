@@ -1,0 +1,435 @@
+  Akademia Górniczo-Hutnicza
+im. Stanis³awa Staszica w Krakowie
+__________________________________________________________________________________________________________
+  Wydzia³ In¿ynierii Metali i Informatyki Przemys³owej
+   
+                                        
+   
+PRACA MAGISTERSKA
+  Temat: Bezpieczeñstwo systemów operacyjnych w œrodowiskach wirtualnych
+- promotor Przemys³aw Marynowski
+   Imiê i nazwisko: Micha³ Kochanowicz
+   Kierunek studiów: Informatyka Techniczna
+   Opiekun pracy: dr in¿. Przemys³aw Marynowski
+
+Kraków, rok Akadem. 2024/2025
+
+
+Spis treœci
+    1.	WSTÊP	3
+    2.	WPROWADZENIE TEORETYCZNE	5
+    3.	ŒRODOWISKO TESTOWE	10
+    4.	TESTY BEZPIECZEÑSTWA	14
+    5.	ZAKOÑCZENIE I WNIOSKI	47
+    LITERATURA	48
+    6.	ZA£¥CZNIK A. KOD APLIKACJI TESTOWEJ DO ATAKÓW BRUTE FORCE	ERROR! BOOKMARK NOT DEFINED.
+    
+
+
+1. Wstêp
+   Wspó³czesne systemy informatyczne wymagaj¹ elastycznoœci, wysokiej wydajnoœci oraz racjonalizacji kosztów eksploatacji i utrzymania. Istotn¹ odpowiedzi¹ na te potrzeby jest wirtualizacja, która oddziela warstwê us³ug od fizycznej infrastruktury i umo¿liwia jednoczesne uruchamianie wielu systemów operacyjnych oraz us³ug na wspólnym zasobie sprzêtowym. Takie podejœcie zwiêksza wykorzystanie zasobów, upraszcza zarz¹dzanie i obni¿a koszty, przy zachowaniu wymaganych parametrów jakoœciowych [21]. Takie podejœcie generuje jednak nowe potencjalne zagro¿enia, dotycz¹ce bezpieczeñstwa systemów, wykorzystuj¹cych techniki wirtualizacji. 
+1.1 Cel, zakres pracy i teza
+   Celem pracy jest ocena bezpieczeñstwa systemów operacyjnych uruchamianych w maszynach wirtualnych w porównaniu z maszynami fizycznymi. Podstaw¹ jest za³o¿enie, ¿e migracja do œrodowiska wirtualnego co do zasady nie usuwa istniej¹cych podatnoœci, lecz zmienia profil ryzyka i mo¿e wprowadzaæ dodatkowe wektory ataku lub korzyœci (np. lepsz¹ izolacjê) [20]. 
+   Zakres obejmuje zwiêz³y przegl¹d literatury i zagro¿eñ, opis u¿ytej platformy oraz doboru systemów (Windows 10, Ubuntu LTS), opracowanie jednolitej metodyki porównawczej i wykonanie eksperymentów w parach „maszyna wirtualna–komputer fizyczny” (tam, gdzie to jest mo¿liwe) dla kluczowych obszarów, czyli warstwy sieciowej (m.in. pods³uchiwanie ruchu, podszywanie siê w sieci lokalnej, atak s³ownikowy) oraz eskalacji uprawnieñ (m.in. pliki SUID, konfiguracja sudo, dostêp do urz¹dzeñ peryferyjnych), a tak¿e kana³ów typowych dla platformy VMware. Wyniki zostan¹ zestawione i przeanalizowane ze sformu³owaniem wniosków oraz wskazaniem potencjalnych przyczyn uzyskanych rezultatów. Mo¿na zatem wyszczególniæ czêœæ teoretyczn¹, badawcz¹ oraz wnioski. 
+   W pracy przyjêto nastêpuj¹c¹ tezê: bezpieczeñstwo systemów uruchamianych w maszynach wirtualnych i na maszynach fizycznych jest porównywalne, natomiast ró¿ni siê profil ryzyka. Wirtualizacja z jednej strony mo¿e ograniczaæ skutki incydentów, z drugiej tworzy nowe wektory ataku [20].
+
+1.2 Motywacje podjêcia pracy
+   Podjêcie pracy na temat bezpieczeñstwa systemów operacyjnych w œrodowiskach wirtualnych wynika z potrzeby zbadania jak, coraz bardziej popularne, maszyny wirtualne zachowuj¹ siê w warunkach zagro¿enia. Polskojêzyczna, a tak¿e zagraniczna literatura nie oferuje wielu pozycji, które kompleksowo opisywa³yby to zagadnienie, szczególnie w oparciu o ró¿ne typy ataków, a tak¿e o porównanie najpopularniejszych systemów obecnie na rynku, czyli Windows i Linux, porównuj¹c równie¿ ich zachowanie do sytuacji, gdy s¹ zainstalowane na fizycznym sprzêcie.
+   
+
+
+2. Wprowadzenie teoretyczne
+   Wirtualizacja polega na uruchamianiu jednego lub wiêcej systemów goœcia na sprzêcie wirtualnym, zarz¹dzanym przez hipernadzorcê, który rozdziela zasoby i zapewnia izolacjê oraz mechanizmy wspó³dzielenia [20]. W tym modelu dotychczasowe podatnoœci us³ug i aplikacji pozostaj¹ aktualne, natomiast dochodz¹ wektory specyficzne, czyli m.in. ryzyka w warstwie zarz¹dzania i dostêpu administracyjnego do hipernadzorcy, kana³y integracji hosta z goœciem, a tak¿e utrata widocznoœci ruchu na wewnêtrznych sieciach wirtualnych, co mo¿e wymagaæ alternatywnych metod monitorowania [20]. 
+2.1 Przegl¹d literatury i istniej¹cych rozwi¹zañ
+   Jak podkreœlaj¹ Scarfone, Souppaya i Hoffman w przewodniku NIST Guide to Security for Full Virtualization Technologies, wirtualizacja nie usuwa zagro¿eñ w³aœciwych systemom goœci, lecz wprowadza ryzyka warstwy poœredniej (hipernadzorca), kana³ów host–goœæ i sieci wirtualnych. Ramy odniesienia obejmuj¹ mechanizmy integracji narzêdzi goœcia czy te¿ zarz¹dzanie obrazami i migawkami, ze szczególnym uwzglêdnieniem poufnoœci danych w migawkach i koniecznoœci monitorowania ruchu wewn¹trz hosta  [20].
+   W ujêciu Pék, Buttyána i Bencsátha przedstawionym w artykule A Survey of Security Issues in Hardware Virtualization model zagro¿eñ dla œrodowisk wirtualnych grupuje wektory wzglêdem celu (maszyna wirtualna, hipernadzorca, interfejsy zarz¹dzania, sieæ, pamiêæ, w kontekœcie magazynowania danych) i przywilejów napastnika (zewnêtrzny bez dostêpu, uprzywilejowany w goœciu i infrastrukturze oraz pe³ny dostêp administracyjny). Wektory te zosta³y przedstawione na Rys. 2.1.  Autorzy podkreœlaj¹ znaczenie technik wykrywania wirtualizacji jako kroków poprzedzaj¹cych ataki specyficzne dla platformy  [21]. 
+   
+Rys.  2.1. Model zagro¿eñ w œrodowiskach wirtualnych wg Pék, Buttyána i Bencsátha – wektory ataku wed³ug celu i poziomu przywilejów napastnika.
+   Jak wskazuj¹ Mahipal i Ceronmani Sharmila w pracy Virtual Machine Security Problems and Countermeasures for Improving Quality of Service in Cloud Computing, ujêcia problemowe koncentruj¹ siê na trzech kategoriach trudnych zagro¿eñ: boczne kana³y wynikaj¹ce ze wspó³dzielonego sprzêtu, kompromitacja hipernadzorcy (np. b³êdy mapowania pamiêci) oraz nadu¿ycia migracji na ¿ywo. Autorzy postuluj¹ podejœcie holistyczne ³¹cz¹ce œrodki na poziomie maszyny wirtualnej i hipernadzorcy, takie jak np. monitorowanie liczników wydajnoœci, analiza zaufanych wywo³añ systemowych czy samoodtwarzanie maszyny wirtualnej (migawki) [23].
+   Were, Singha i Odawê w Security Evaluation Framework for Virtualised proponuj¹ wielowarstwowe ramy oceny i ochrony œrodowisk wirtualnych dla kluczowych wektorów  ryzyka (podatnoœci hipernadzorcy, ucieczki z maszyn wirtualnych, ataki miêdzy maszynami wirtualnymi) w celu zwiêkszenia wykrywalnoœci, skrócenia czasu reakcji i ograniczenia narzutu na wydajnoœæ. Ramy obejmuj¹ warstwy hipernadzorcy, maszyn wirtualnych, sieci, zarz¹dzania oraz monitorowania. Akcentuj¹ „mikrohipernadzorcê”, wzmocnion¹ izolacjê, segmentacjê sieci, wielosk³adnikowe uwierzytelnianie i ci¹g³e monitorowanie [24].
+2.2 Wskazanie wybranych obszarów bezpieczeñstwa
+   Analizy i eksperymenty koncentruj¹ siê na trzech g³ównych obszarach, które obejmuj¹ ryzyka wspólne dla fizycznych maszyn oraz maszyn wirtualnych, ale tak¿e wektory specyficzne dla wirtualizacji. Do obszarów tych nale¿¹ m.in. warstwa sieciowa, a w niej ataki takie jak pods³uch (ang, sniffing), podszywanie siê pod ARP (ang. ARP spoofing), brute-force, a tak¿e eskalacja uprawnieñ, a w niej eskalacja przez plik z bitem SUID, eskalacja przez b³êdn¹ konfiguracjê sudo, eskalacja poprzez dostêp do œcie¿ki /dev/mem, atak typu Rowhammer, a tak¿e dostêp do urz¹dzeñ peryferyjnych. Ostatnim obszarem s¹ kana³y hosta oraz goœcia w VMware, czyli wspólny dostêp do schowka i foldery wspó³dzielone, co jest podatnoœci¹ typow¹ dla maszyn wirtualnych, której nie da siê bezpoœrednio porównaæ z systemami zainstalowanymi na fizycznym komputerze.
+2.3 Sposób przeprowadzenia testów
+   Badania realizowane s¹ w kontrolowanym œrodowisku sk³adaj¹cym siê z hosta, dwóch wariantów uruchomieniowych systemów badanych (na maszynie fizycznej oraz w maszynie wirtualnej) i odrêbnego wêz³a generuj¹cego ruch lub bezpoœrednio atak. Tam, gdzie by³o to mo¿liwe, realizowano scenariusz dla pary sk³adaj¹cej siê z systemu zainstalowanego na fizycznym sprzêcie oraz systemu uruchomionego przy pomocy maszyny wirtualnej, a tak¿e na systemie Windows 10 oraz, dla porówniania, Ubuntu 22.04. Zachowane zosta³y identyczne lub zbli¿one ustawienia oprogramowania. 
+2.4 Œrodowiska wirtualne
+   Œrodowisko wirtualne (ang. Virtual Environments, VE) to oprogramowanie symuluj¹ce dzia³anie sprzêtu komputerowego. W odró¿nieniu od tradycyjnych systemów fizycznych umo¿liwia ono jednoczesne funkcjonowanie wielu niezale¿nych systemów operacyjnych lub aplikacji na jednej maszynie [1]. Dzia³aj¹ one niezale¿nie od fizycznej struktury sprzêtu. Tworzenie œrodowisk wirtualnych mo¿liwe jest dziêki wykorzystaniu technologii wirtualizacji. Jest to technologia, wykorzystuj¹ca  œrodowisko logiczne do przekroczenia fizycznych ograniczeñ sprzêtowych [2].
+   Podstawowym elementem œrodowisk wirtualnych jest maszyna wirtualna (ang. Virtual Machine, VM). Jest to aplikacja, wykonuj¹ca program tak, jakby by³a fizycznym urz¹dzeniem, wiêc mo¿na by³oby powiedzieæ, ¿e jest to „komputer”, dzia³aj¹cy wewn¹trz fizycznego komputera. Aplikacja maszyny wirtualnej (nazywana „goœciem”) uruchamia swój w³asny system operacyjny na rzeczywistej maszynie (zwanej „gospodarzem”). Wirtualny system operacyjny mo¿e byæ dowolny, np. Windows, MacOS lub Linux i nie jest ograniczony do jednego systemu operacyjnego na maszynie gospodarza [3]. Ka¿da maszyna wirtualna dzia³a niezale¿nie i nie ma wp³ywu na dzia³anie innych maszyn wirtualnych. 
+2.5 Charakterystyka wirtualizacji
+   Wirtualizacja to technologia umo¿liwiaj¹ca tworzenie wielu odizolowanych œrodowisk komputerowych, zwanych maszynami wirtualnymi, na jednym fizycznym urz¹dzeniu. Dziêki warstwie poœrednicz¹cej, zwanej hipernadzorc¹ (ang. hypervisor), ka¿da maszyna wirtualna mo¿e dzia³aæ jak odrêbny komputer z w³asnym systemem operacyjnym i aplikacjami, niezale¿nie od innych instancji. To podejœcie pozwala na efektywne wykorzystanie zasobów sprzêtowych, zwiêkszenie skalowalnoœci, uproszczenie zarz¹dzania oraz ograniczenie kosztów operacyjnych [4].
+   Hipernadzorca to oprogramowanie, które umo¿liwia tworzenie i zarz¹dzanie maszynami wirtualnymi poprzez oddzielenie systemów operacyjnych goœci od fizycznej infrastruktury sprzêtowej. W zale¿noœci od sposobu dzia³ania, wyró¿niamy jego dwa g³ówne typy. Pierwszym z nich jest hipernadzorca natywny (ang. bare-metal), który dzia³a bezpoœrednio na sprzêcie, bez potrzeby instalowania systemu operacyjnego gospodarza. Przyk³adem jest Microsoft Hyper-V. Drugim typem jest hipernadzorca hostowany, który funkcjonuje jako aplikacja zainstalowana w ramach istniej¹cego systemu operacyjnego, chocia¿by popularne VirtualBox, czy VMware Workstation. 
+   Dodatkowo, hipernadzorcê mo¿na klasyfikowaæ ze wzglêdu na sposób wirtualizacji. Wyró¿nia siê:
+* pe³n¹ wirtualizacjê, gdzie system goœcia dzia³a bez koniecznoœci modyfikacji, nieœwiadomy, ¿e funkcjonuje w œrodowisku wirtualnym, jest w pe³ni niezale¿ny;
+* wirtualizacjê wspieran¹ sprzêtowo, gdzie wykorzystuje specjalne funkcje procesora, takie jak Intel VT-x czy AMD-V, w celu optymalizacji pracy maszyn wirtualnych;
+* parawirtualizacjê, która wymaga modyfikacji systemu goœcia, który jest „œwiadomy”, ¿e dzia³a w œrodowisku wirtualnym i potrafi efektywnie wspó³pracowaæ z hipernadzorc¹ [5].
+2.6 Przewidywane efekty
+   Przewidywanym wynikiem analiz jest wniosek, ¿e przeniesienie systemów do œrodowisk wirtualnych co do zasady nie zmienia podatnoœci us³ug i aplikacji, lecz modyfikuje profil ryzyka, dodaj¹c wektory specyficzne (warstwa zarz¹dzania, integracje miêdzy gospodarzem a goœciem, sieci) przy jednoczesnych korzyœciach izolacyjnych. Poziom bezpieczeñstwa maszyn fizycznych i wirtualnych powinien byæ porównywalny, a ró¿nice wynikaæ g³ównie z konfiguracji oprogramowania i specyfiki maszyn wirtualnych. 
+3. Œrodowisko testowe
+   Rozdzia³ przedstawia wybrane do testów narzêdzia, ich konfiguracjê, a tak¿e parametry techniczne sprzêtu, na którym dzia³aj¹ omawiane oprogramowania. Wskazane zosta³y tak¿e motywacje u¿ycia takich, a nie innych rozwi¹zañ. 
+3.1 VMware jako platforma testowa
+   Vmware Workstation Pro (od firmy Broadcom) jest w pe³ni zwirtualizowanym œrodowiskiem sprzêtowym dla systemu operacyjnego goœcia. Program ten obs³uguje wiele systemów operacyjnych gospodarza, w tym Windows, Linux oraz macOS, i zosta³ zaprojektowany z myœl¹ o maksymalnym wykorzystaniu fizycznych zasobów komputera, co przek³ada siê na wysok¹ wydajnoœæ dzia³ania maszyn wirtualnych [4].
+   Oprogramowanie to stara siê wykonywaæ instrukcje bezpoœrednio na procesorze gospodarza, o ile jest to mo¿liwe. W przypadkach, gdy bezpoœrednie wykonanie kodu nie jest wspierane przez sprzêt, oprogramowanie korzysta z techniki dynamicznego t³umaczenia binarnego, która pozwala na przekszta³canie instrukcji w czasie rzeczywistym. Tak przetworzony kod jest przechowywany w pamiêci RAM, co umo¿liwia dalsze dzia³anie maszyny wirtualnej z du¿¹ szybkoœci¹ – wed³ug producenta, z wydajnoœci¹ siêgaj¹c¹ ponad 80% wzglêdem natywnego systemu [4].
+   VMware emuluje podstawowe elementy sprzêtowe, takie jak karta graficzna (czego nie oferuje np. VirtualBox od firmy Oracle), karta sieciowa czy kontrolery dysków, a tak¿e umo¿liwia dostêp do urz¹dzeñ USB, portów szeregowych i równoleg³ych za pomoc¹ sterowników poœrednicz¹cych. Warto jednak zauwa¿yæ, ¿e przenoszenie maszyn wirtualnych miêdzy ró¿nymi komputerami, szczególnie z odmiennymi architekturami procesora lub liczb¹ rdzeni, mo¿e wymagaæ dodatkowej konfiguracji ze wzglêdu na ró¿nice w zestawach instrukcji [4].
+   Dziêki powy¿szym rozwi¹zaniom, VMware Workstation Pro wyró¿nia siê wysok¹ wydajnoœci¹ i wszechstronnoœci¹, co czyni go odpowiednim narzêdziem do prowadzenia badañ nad bezpieczeñstwem w œrodowiskach wirtualnych.
+   
+   
+    Rys. 3.1. Widok podstawowy Vmware Workstation w wersji 17.6.3.
+   
+   Œrodowisko Vmware Workstation oferuje szereg funkcji u³atwiaj¹cych pracê z maszynami wirtualnymi. Umo¿liwia tworzenie maszyn z wybran¹ konfiguracj¹ systemu operacyjnego, pamiêci RAM oraz przestrzeni dyskowej. Pozwala na wykonywanie migawek (ang. snapshot), czyli zapisywanie stanu maszyny w wybranym momencie i przywracanie go w razie potrzeby. Dodatkowo oferuje klonowanie maszyn, uruchamianie wielu maszyn jednoczeœnie przy zachowaniu izolacji miêdzy nimi, a tak¿e zaawansowan¹ konfiguracjê sieci wirtualnych (np. NAT, bridge, host-only). Program umo¿liwia równie¿ ³¹czenie siê z zdalnymi serwerami, takimi jak Vmware ESX.
+
+
+3.2 Konfiguracja œrodowiska testowego
+   Do przeprowadzenia badañ wykorzystano komputer stacjonarny wyposa¿ony w procesor AMD Ryzen 5 3600 (6 rdzeni, 12 w¹tków), 64 GB pamiêci RAM DDR4 (3600 MHz), dysk SSD M.2 o pojemnoœci 2 TB oraz kartê graficzn¹ NVIDIA GeForce RTX 3060 Ti. Systemem operacyjnym gospodarza by³ Windows 11 Pro (wersja 24H2).
+   Œrodowisko wirtualne zosta³o zrealizowane przy u¿yciu VMware Workstation Pro 17.6.3. W ramach testów utworzono dwie maszyny wirtualne: jedn¹ z systemem Windows 10 Pro (wersja 22H2, 64-bit), natomiast drug¹ z systemem Ubuntu 24.04.2 LTS. Obie maszyny skonfigurowano w taki sposób, ¿e zosta³y przypisane po cztery rdzenie procesora, aby zapewniæ stabilnoœæ i wydajnoœæ przy jednoczesnych zachowaniu zasobów gospodarza. Przydzielono im po 8 GB pamiêci RAM. Po³¹czenie sieciowe ustawiono w trybie mostkowanym (bridged), umo¿liwiaj¹c pe³n¹ komunikacjê z innymi urz¹dzeniami w sieci lokalnej, co by³o niezbêdne do testów typu Man-in-the-Middle i sniffing. Dla systemu Windows wybrano dysk NVMe, natomiast dla Ubuntu – SCSI, zgodnie z zaleceniami instalatorów i wymaganiami kompatybilnoœci. Oprogramowanie uk³adowe ustawiono jako UEFI, co zapewnia nowoczesne mechanizmy bezpieczeñstwa i zgodnoœæ z funkcjami systemowymi, takimi jak Microsoft Defender Credential Guard. Na obu maszynach zainstalowano VMware Tools, poprawiaj¹ce wydajnoœæ i integracjê ze œrodowiskiem wirtualnym. Konfiguracja maszyn pozwala³a na swobodne przeprowadzanie zaplanowanych scenariuszy testowych i odzwierciedla³a typowe ustawienia spotykane w œrodowiskach rzeczywistych.
+3.3 Kali Linux – narzêdzie do przeprowadzania testów
+   Na osobnym komputerze pod³¹czonym do tej samej sieci zainstalowany zosta³ system Kali Linux w wersji 2025.1c. Jest to dystrybucja typu open-source oparta na systemie Debian, stworzona przez Offensive Security w celach przeprowadzania testów penetracyjnych oraz audytów bezpieczeñstwa. Posiada on wbudowane narzêdzia dedykowane testom bezpieczeñstwa, a tak¿e dostosowane j¹dro systemu do wstrzykiwania ró¿nego rodzaju pakietów [8].
+   System ten zosta³ wybrany do testów, ze wzglêdu na swoj¹ popularnoœæ, stabilnoœæ oraz szerok¹ spo³ecznoœæ skupion¹ wokó³ oprogramowania. Jest to adekwatne narzêdzie do przeprowadzenia testów bezpieczeñstwa w œrodowiskach wirtualnych. 
+   
+   
+   
+4. Testy bezpieczeñstwa
+   Rozdzia³ stanowi czêœæ badawcz¹ pracy, z jednoczesnym uwzglêdnieniem teoretycznych wyjaœnieñ pojêæ zwi¹zanych z przeprowadzanymi badaniami. Analiza obejmuje identyfikacjê potencjalnych zagro¿eñ, symulacjê wybranych ataków oraz ocenê skutecznoœci mechanizmów ochronnych w kontrolowanych warunkach laboratoryjnych. Przeprowadzane testy pozwalaj¹ na porównanie podatnoœci systemów w ró¿nych konfiguracjach oraz okreœlenie wp³ywu wirtualizacji na bezpieczeñstwo operacyjne.
+4.1 Pods³uchiwanie pakietów (ang. sniffing)
+   Pods³uchiwanie pakietów (ang. sniffing) to pasywne przechwytywanie i analiza ruchu sieciowego przez program dzia³aj¹cy na interfejsie sieciowym, co umo¿liwia odczyt treœci niezabezpieczonych pakietów (np. HTTP, Telnet) i pozyskanie danych uwierzytelniaj¹cych. Jest  stosowany do diagnostyki i testów, natomiast z perspektywy bezpieczeñstwa jest form¹ nieuprawnionej ingerencji. Zbli¿ony jest do „pods³uchu przewodu”, a w sieciach prze³¹czanych jego skutecznoœæ wobec obcego ruchu zwykle wymaga technik poœrednich (np. MITM/ARP) zamiast czystej obserwacji ³¹cza [22].
+   Celem testów by³o sprawdzenie czy mo¿liwe jest pasywne pods³uchiwanie ruchu sieciowego z systemu Kali Linux zainstalowanego na fizycznym komputerze, przy u¿yciu narzêdzia Wireshark. Wszystkie urz¹dzenia by³y po³¹czone do tej samej sieci lokalnej (Wi-Fi). Maszyny testowe, zarówno fizyczne, jak i wirtualne, pracowa³y w trybie mostkowanym (bridged), co zapewnia³o im bezpoœredni¹ obecnoœæ w tej samej podsieci IP co komputer atakuj¹cy. 
+   W ramach badania przeprowadzono cztery testy - dwa z systemem Windows 10 (na maszynie fizycznej i wirtualnej) oraz dwa z systemem Ubuntu 22.04 (równie¿ fizycznie i na maszynie wirtualnej). We wszystkich przypadkach wy³¹czono domyœlne zabezpieczenia systemowe, takie jak zapora Windows Firewall czy ufw (w systemie Ubuntu), aby sprawdziæ, czy ruch HTTP da siê przechwyciæ w warunkach minimalnej ochrony.
+   Tabela poni¿ej przedstawia zestawienie przeprowadzonych testów.
+Test IDSystem atakowanyŒrodowiskoZabezpieczeniaRuch HTTP przechwyconyWVWindows 10VMwarebraknieWBWindows 10FizycznebraknieUVUbuntu 22.04VMwarebraknieUBUbunu 22.04Fizycznebraknie    Tab. 4.1. Testy przeprowadzone w ramach ataku typu sniffing.
+   
+   Program Wireshark w wersji 4.4.4 zosta³ uruchomiony na interfejsie sieciowym wlan01. W³¹czony zosta³ tryb promiscous.2 W celu zawê¿enia analizy, w Wiresharku ustawiono filtr ograniczaj¹cy rejestrowane pakiety wy³¹cznie do protoko³u HTTP. Test polega³ na odwiedzeniu strony HTTP (http://testphp.vulnweb.com/login.php)3 na maszynie ofiary oraz zasymulowaniu ruchu poprzez wprowadzenie i wys³anie przyk³adowych danych logowania. 
+   
+Fot. 4.1. Konfiguracja filtrowania ruchu HTTP w narzêdziu Wireshark na interfejsie wlan0.
+   
+   Po uruchomieniu przechwytywania i wygenerowaniu ruchu z maszyn ofiar Wireshark nie zarejestrowa³ ¿adnego ruchu HTTP w ¿adnym z testowanych przypadków.
+   
+Fot. 4.2.  Brak przechwyconego ruchu HTTP po stronie atakuj¹cego w przypadku ruchu z maszyny ofiary.
+   
+   Dla porównania i zobrazowania ataku, a tak¿e sprawdzenia metodologii, przeprowadzony zosta³ dodatkowy test, gdzie po³¹czenie HTTP odby³o siê na komputerze atakuj¹cym. Wireshark odnotowa³ ruch sieciowy. 
+   
+    
+Fot. 4.3. Przechwycony ruch HTTP po wygenerowaniu go lokalnie na komputerze atakuj¹cym.
+   
+   Dane przesy³ane w formularzu logowania zosta³y przeanalizowane przy u¿yciu funkcji „Follow HTTP Stream”, która umo¿liwi³a pe³ny podgl¹d przes³anych treœci, w tym danych logowania.
+   
+Fot. 4.4. Podgl¹d danych logowania uzyskanych przez narzêdzie „Follow HTTP Stream” w Wireshark na komputerze atrakuj¹cym.
+   
+   
+    Rys. 4.1. Schemat topologii œrodowiska testowego w ataku typu sniffing.
+   
+   Przygotowany zosta³ schemat przedstawiaj¹cy topologiê œrodowiska testowego. W jego sk³ad wchodz¹: maszyny testowe (fizyczne oraz maszyny wirtualne), router Wi-Fi (pe³ni¹cy rolê prze³¹cznika sieciowego) oraz komputer atakuj¹cy z Kali Linux i Wiresharkiem. Ruch sieciowy z maszyn ofiar nie by³ kierowany do atakuj¹cego, poniewa¿ prze³¹cznik przekazuje pakiety wy³¹cznie do docelowego adresata, eliminuj¹c mo¿liwoœæ pasywnego pods³uchu.
+   Brak przechwyconego ruchu HTTP nie œwiadczy o b³êdach w konfiguracji testu, lecz o skutecznoœci wspó³czesnej architektury sieci w ograniczaniu dostêpu do pakietów przez nieuprawnione hosty. W kontekœcie bezpieczeñstwa oznacza to, ¿e nawet przy wy³¹czonych zaporach systemowych, izolacja sieciowa skutecznie chroni przed pasywnym pods³uchiwaniem. W œrodowiskach wykorzystuj¹cych prze³¹czniki sieciowe (np. domowe routery Wi-Fi) standardowy sniffing z u¿yciem narzêdzi takich jak Wireshark nie pozwala na pods³uchiwanie ruchu pomiêdzy innymi urz¹dzeniami w sieci. Wynika to z faktu, ¿e prze³¹czniki przekazuj¹ pakiety tylko do w³aœciwego odbiorcy, co uniemo¿liwia pasywne przechwytywanie pakietów przez inne hosty [9].
+   Z przeprowadzonych badañ wynika, ¿e w przypadku testów pods³uchiwania, maszyny wirtualne nie wykazuj¹ ró¿nicy w kontekœcie bezpieczeñstwa w porównaniu do maszyn fizycznych. Ustawienie urz¹dzeñ w tej samej sieci (typu bridged) nie wystarczy³o do przechwycenia ruchu HTTP z maszyny ofiary.
+   Testy w wariantach z aktywnymi zabezpieczeniami nie zosta³y przeprowadzone - skoro przechwycenie ruchu by³o niemo¿liwe w najmniej chronionym scenariuszu, dalsze zwiêkszanie ochrony nie mia³oby wp³ywu na wynik. Wnioskiem praktycznym jest to, ¿e skuteczne przechwytywanie ruchu HTTP w takich warunkach wymaga zastosowania ataku aktywnego, np. typu ARP spoofing lub Man-in-the-Middle.
+   
+   
+
+
+4.2 ARP spoofing
+4.2.1 Teoretyczne podstawy ataku ARP spoofing
+   
+   ARP spoofing to technika ataku w sieciach lokalnych, polegaj¹ca na wysy³aniu fa³szywych komunikatów ARP (ang. Address Resolution Protocol), które maj¹ na celu przekonanie urz¹dzenia ofiary, ¿e atakuj¹cy jest innym zaufanym hostem, najczêœciej bram¹ sieciow¹. Dziêki temu mo¿liwe jest przechwycenie, zmodyfikowanie lub przekierowanie ruchu sieciowego [10].
+   Adresy IP s³u¿¹ do identyfikacji urz¹dzeñ w sieci, ale na poziomie fizycznym komunikacja odbywa siê za pomoc¹ adresów MAC. Aby powi¹zaæ adres IP z adresem MAC, urz¹dzenia korzystaj¹ z ARP, które dynamicznie buduje tzw. tablicê ARP, mapuj¹c¹ IP do MAC. Atakuj¹cy mo¿e wykorzystaæ ten mechanizm, wysy³aj¹c spreparowan¹ odpowiedŸ ARP, która podszywa siê pod router lub inne urz¹dzenie. Celem jest wpisanie fa³szywego powi¹zania IP z MAC w tablicy ARP ofiary [10].
+   
+   
+    Rys. 4.2. Schemat ataku ARP spoofing.
+   
+   Atak przebiega zazwyczaj w dwóch etapach. W pierwszym atakuj¹cy wysy³a fa³szywe odpowiedzi ARP do ofiary, informuj¹c, ¿e adres IP routera (bramy) nale¿y do jego (atakuj¹cego) adresu MAC. Nastêpnie ofiara aktualizuje swoj¹ tablicê ARP i zaczyna przesy³aæ dane do atakuj¹cego zamiast do faktycznej bramy. Atakuj¹cy mo¿e przechwyciæ dane, a nastêpnie przes³aæ je dalej (atak typu Man-in-the-Middle).
+   Ataki typu ARP spoofing s¹ popularne ze wzglêdu na swoj¹ skutecznoœæ, jak równie¿ z powodu prostoty implementacji. Wystarczy, ¿e atakuj¹cy znajdzie siê w tej samej sieci lokalnej co ofiara i bêdzie w stanie wysy³aæ pakiety ARP. Nie s¹ potrzebne ¿adne specjalne uprawnienia [11].
+   Z perspektywy bezpieczeñstwa, ARP spoofing stanowi zagro¿enie, poniewa¿ mo¿e prowadziæ m.in. do kradzie¿y to¿samoœci u¿ytkownika (np. przejêcie sesji logowania), instalacji z³oœliwego oprogramowania (poprzez modyfikacjê ruchu) lub te¿  ataków typu DoS (gdy dane nie s¹ przekazywane dalej po przejêciu).
+   Atak ARP spoofing pozwala nie tylko na pasywne pods³uchiwanie ruchu, ale tak¿e na jego modyfikowanie. Atakuj¹cy mo¿e przechwyciæ dane logowania, sesje HTTP, a nawet wstrzykiwaæ z³oœliwy kod [10].
+4.2.2 Przebieg i wyniki ataku ARP spoofing w œrodowisku testowym
+   Przeprowadzone próby ataku ARP spoofing mia³y na celu przechwycenie danych logowania na testowanych systemach operacyjnych, z wykorzystaniem techniki Man-in-the-Middle (MITM). Atak realizowany by³ za pomoc¹ narzêdzia Ettercap, a do analizy przechwyconego ruchu u¿yto dodatkowo Wiresharka.
+   
+   Fot. 4.5. Widok aplikacji Ettercap podczas ataku ARP spoofing. W polach Target 1 oraz Target 2 zdefiniowano adres IP ofiary oraz bramy, co umo¿liwia przeprowadzenie ataku typu Man-in-the-Middle. W dolnej czêœci okna widoczne s¹ przechwycone dane logowania przesy³ane w postaci niezaszyfrowanej (HTTP POST).
+   
+   
+   Fot. 4.6. Widok przechwyconego ruchu HTTP w narzêdziu Wireshark. Widoczne jest ¿¹danie POST do strony logowania /userinfo.php, zawieraj¹ce dane uwierzytelniaj¹ce przesy³ane w formacie application/x-www-form-urlencoded. Przechwycenie pakietu potwierdza skutecznoœæ ataku MITM.
+   
+   Mechanizm ataku opiera³ siê na fa³szowaniu odpowiedzi ARP w lokalnej sieci, dziêki czemu maszyna atakuj¹ca (Kali Linux) by³a rozpoznawana przez system ofiary jako domyœlna brama sieciowa. W wyniku tego ca³y ruch sieciowy ofiary by³ przekierowywany przez komputer atakuj¹cego. Pozwoli³o to na przechwytywanie ¿¹dañ HTTP, a w niektórych przypadkach danych logowania przesy³anych w postaci nieszyfrowanej.
+   W trakcie ka¿dego testu u¿ytkownik na maszynie ofiary otwiera³ stronê http://testphp.vulnweb.com/login.php i rêcznie wpisywa³ dane logowania (np. admin:test). Przeprowadzano po 15 prób dla ka¿dego scenariusza testowego, z rejestracj¹, czy dane zosta³y skutecznie przechwycone, czy tylko widoczny by³ ruch sieciowy, czy te¿ nie odnotowano ¿adnej aktywnoœci.
+   W przypadku Ettercapa, dane logowania (login i has³o) by³y czêsto wyœwietlane bezpoœrednio w dolnym panelu aplikacji, w zak³adce "Messages" lub "Connections", jako fragment przesy³anego ¿¹dania HTTP POST. Narzêdzie to potrafi równie¿ filtrowaæ pakiety wed³ug treœci i rozpoznawaæ typowe formularze logowania, dziêki czemu nawet bez szczegó³owej analizy mo¿na by³o szybko oceniæ, czy atak zakoñczy³ siê sukcesem.
+   W Wiresharku natomiast dane logowania by³y identyfikowane jako treœæ ¿¹dania HTTP – widoczne w zak³adce "Follow HTTP Stream", najczêœciej w formacie:
+   username=admin&password=test
+   lub jako fragment application/x-www-form-urlencoded w pakiecie typu POST. Widocznoœæ tych danych by³a uzale¿niona od warunków testu, czyli systemu, œrodowiska uruchomieniowego (komputer fizyczny czy maszyna wirtualna) oraz aktywnych zabezpieczeñ.
+   Scenariusze testowe obejmowa³y osiem konfiguracji: Windows 10 oraz Ubuntu 22.04, ka¿dorazowo uruchomione jako maszyna wirtualna oraz jako system fizyczny, z w³¹czonymi i wy³¹czonymi domyœlnymi zaporami sieciowymi (firewall i ufw).
+   W ramach testów za skuteczny atak uznawano wy³¹cznie przypadki, w których dane logowania (login i has³o) zosta³y przechwycone w formie czytelnej. Samo odnotowanie aktywnoœci sieciowej, bez mo¿liwoœci pozyskania danych uwierzytelniaj¹cych, traktowane by³o jako niepowodzenie, gdy¿ nie stanowi realnego zagro¿enia dla poufnoœci danych.
+
+
+SystemŒrodowiskoZabezpieczeniaPowodzeniePrzechwycenie samego ruchuBrak wynikówWindows 10fizyczny komputerw³¹czone1140Windows 10fizyczny komputerwy³¹czone942Windows 10maszyna wirtualnaw³¹czone1140Windows 10maszyna wirtualnawy³¹czone1230Ubuntu 22.04fizyczny komputerw³¹czone960Ubuntu 22.04fizyczny komputerwy³¹czone672Ubuntu 22.04maszyna wirtualnaw³¹czone681Ubuntu 22.04maszyna wirtualnawy³¹czone951    Tab. 4.2. Wyniki testów ARP spoofing dla ró¿nych konfiguracji systemów i œrodowisk.
+    
+   £¹cznie przeprowadzonych zosta³o 120 prób ataku ARP spoofing, z czego 73 zakoñczy³o siê powodzeniem, co daje ok. 61% skutecznych ataków. Dane pokazuj¹, ¿e zabezpieczenia typu firewall oraz ufw nie maj¹ wp³ywu na ochronê przed atakami typu ARP spoofing, poniewa¿ w niektórych przypadkach udzia³ skutecznych ataków przy w³¹czonych zabezpieczeniach by³ wiêkszy ni¿ wy³¹czonych ufw oraz firewall. Z uwagi na brak spójnych korelacji, szczegó³owy podzia³ skutecznoœci wzglêdem statusu zapory sieciowej nie zosta³ objêty osobn¹ analiz¹ porównawcz¹.
+   Wykres 4.1. przedstawia procentow¹ skutecznoœæ przechwycenia danych logowania (pe³ny sukces ataku) w scenariuszach obejmuj¹cych systemy Windows 10 i Ubuntu 22.04, uruchamiane jako maszyny fizyczne oraz wirtualne.
+   
+    
+    Wykres. 4.1. Skutecznoœæ ataków ARP spoofing (MITM) w zale¿noœci od systemu operacyjnego i œrodowiska uruchomieniowego.
+    
+   Poni¿sze zestawienie (Wykres 4.2.) pokazuje uœrednion¹ skutecznoœæ przechwycenia danych logowania dla wszystkich testów przeprowadzonych na systemach uruchomionych bezpoœrednio na sprzêcie oraz w œrodowisku wirtualnym.
+   
+   
+    Wykres 4.2. Œrednia skutecznoœæ ataków ARP spoofing w zale¿noœci od œrodowiska uruchomieniowego (maszyna fizyczna i wirtualna), niezale¿nie od systemu operacyjnego.
+   
+   Z przedstawionych danych wynika, ¿e system Windows by³ zauwa¿alnie bardziej podatny na atak ARP spoofing, zakoñczony przechwyceniem danych logowania ni¿ Ubuntu. Wiêksze bezpieczeñstwo systemu Linux mo¿e wynikaæ np. z ró¿nic w sposobie aktualizacji i przechowywania wpisów ARP (np. reakcja na ró¿ne typy pakietów ARP), ale tak¿e ró¿nic w domyœlnych konfiguracjach systemowych wp³ywaj¹cych na obs³ugê ARP (cache timeout, filtrowanie pakietów ARP) [12]. Mo¿e to byæ te¿ kwestia ró¿nic w protoko³ach (np. POST, kodowanie URL). 
+   Œrodowisko uruchomieniowe nie mia³o widocznego wp³ywy na wyniki. Ró¿nice w skutecznoœci ataków miêdzy œrodowiskiem fizycznym a wirtualnym by³y niewielkie, co potwierdza dobr¹ zgodnoœæ odwzorowania warunków sieciowych przez tryb bridged w VMware.
+   Badanie pokazuje, ¿e ARP spoofing umo¿liwia skuteczny atak typu MITM w sieciach lokalnych, niezale¿nie od tego czy system uruchomiony jest na fizycznym komputerze, czy maszynie wirtualnej. Wiêksze znaczenie ma jednak system operacyjny. 
+   Potencjalnymi œrodkami zaradczymi wobec podatnoœci obu systemów na ataki typu ARP spoofing mog¹ byæ m.in. dynamiczne monitorowanie tablicy ARP (np. Arpwatch) [13], statyczne wpisy ARP w sieciach krytycznych [14], czy segmentacja sieci (VLAN) [15].
+   
+4.3 Atak si³owy (ang. brute-force)
+4.3.1 Charakterystyka ataku si³owego
+   Atak brute-force polega na systematycznym testowaniu wszystkich mo¿liwych kombinacji danych uwierzytelniaj¹cych, a¿ do momentu znalezienia poprawnego loginu lub has³a. Podstaw¹ skutecznoœci tego typu ataków jest automatyzacja. Atakuj¹cy wykorzystuje odpowiednie narzêdzia, takie jak skrypty lub specjalistyczne oprogramowanie (np. Hydra), które wykonuj¹ setki lub tysi¹ce prób w krótkim czasie. Metoda ta mo¿e byæ skuteczna zw³aszcza w przypadkach, gdy u¿ytkownicy stosuj¹ s³abe, krótkie lub przewidywalne has³a. Wspó³czesne ataki brute-force s¹ coraz czêœciej wspomagane przez dane statystyczne, takie jak zbiory hase³ pochodz¹ce z wycieków czy popularne kombinacje zebrane z otwartych Ÿróde³. W takich scenariuszach atak mo¿e zostaæ zoptymalizowany poprzez u¿ycie ataku s³ownikowego (ang. dictionary attack), który skraca czas potrzebny do z³amania has³a. 
+   Czas potrzebny do skutecznego przeprowadzenia ataku roœnie wyk³adniczo wraz z d³ugoœci¹ i z³o¿onoœci¹ has³a. Dlatego silne mechanizmy uwierzytelniaj¹ce, takie jak d³ugie, losowe has³a, wielosk³adnikowe uwierzytelnianie (MFA), limity logowañ czy systemy CAPTCHA, znacz¹co podnosz¹ poziom odpornoœci systemu na tego rodzaju zagro¿enia [16].
+   Do ataków wykorzystano narzêdzie Hydra. To jeden z najpopularniejszych programów s³u¿¹cych do przeprowadzania ataków typu brute-force na ró¿ne us³ugi sieciowe, w tym m.in. protoko³y HTTP, FTP, SSH, Telnet, SMB czy POP3. Dzia³a poprzez systematyczne próby logowania przy u¿yciu dostarczonych list loginów i hase³, a¿ do znalezienia poprawnej kombinacji.
+   Rys. 4.3. Schemat ataku brute force z wykorzystaniem Hydry – wysy³anie ¿¹dañ HTTP POST z próbami logowania do aplikacji webowej w systemie docelowym.
+4.3.2 Analiza i testy bezpieczeñstwa systemów na atak brute-force
+   Celem testów by³o sprawdzenie, czy systemy operacyjne (Windows 10 oraz Ubuntu 22.04), uruchomione zarówno jako maszyny wirtualne, jak i fizyczne, wykazuj¹ odpornoœæ na atak si³owy (brute-force) na aplikacjê webow¹ z formularzem logowania. Test mia³ zweryfikowaæ czy systemy w jakikolwiek sposób reaguj¹ na du¿¹ liczbê ¿¹dañ logowania (np. logami, blokad¹ adresu IP, opóŸnieniem odpowiedzi), a tak¿e czy wbudowane mechanizmy bezpieczeñstwa (firewall/ufw) maj¹ wp³yw na skutecznoœæ ataku. Sprawdzone zosta³o tak¿e jedno z podstawowych za³o¿eñ pracy, mianowicie czy œrodowisko uruchomienia systemu (fizyczny komputer oraz maszyna wirtualna) zmienia jego podatnoœæ.
+   Test nie koncentrowa³ siê na ³amaniu silnych hase³, lecz na technicznej reakcji systemów operacyjnych na próbê ataku. 
+   W celu przeprowadzenia testów ataków brute-force przygotowano lekk¹ aplikacjê webow¹ z formularzem logowania, uruchamian¹ lokalnie w kontenerze Docker. Aplikacja zosta³a zaprojektowana w prosty sposób – umo¿liwia przes³anie loginu i has³a metod¹ POST oraz weryfikacjê poprawnoœci danych na podstawie zapisanych wartoœci.
+   W sk³ad rozwi¹zania wchodzi³y m.in. pliki login.php oraz users.php, zawieraj¹ce odpowiednio logikê logowania oraz zestaw przyk³adowych danych uwierzytelniaj¹cych. Œrodowisko zosta³o uruchomione lokalnie z wykorzystaniem docker-compose.
+   Pe³na struktura aplikacji i jej kod Ÿród³owy zosta³y przedstawione w za³¹czniku A. Poni¿ej znajduje siê przyk³adowy wygl¹d formularza logowania.
+    
+    Fot. 4.7. Interfejs aplikacji logowania, wykorzystywanej do testów brute-force.
+   
+   Aplikacja testowa wykorzystuje formularz logowania przesy³aj¹cy dane metod¹ POST, w której login i has³o s¹ przekazywane jako parametry ¿¹dania. Narzêdzie Hydra automatyzuje ten proces, podstawiaj¹c kolejne kombinacje nazw u¿ytkowników i hase³, a nastêpnie analizuje odpowiedzi serwera pod k¹tem wyst¹pienia okreœlonego komunikatu b³êdu, co pozwala na identyfikacjê poprawnych danych logowania.
+   Przyk³adowa komenda u¿yta w testach:
+   hydra -L logins.txt -P passwords.txt -s 8080 [adres_IP] http-post-form "/login.php:username=^USER^&password=^PASS^:Nieprawid³owe dane"
+   Parametry -L oraz -P oznaczaj¹ pliki z loginami i has³ami, -s to port serwera HTTP (tu: 8080), http-post-form oznacza modu³ ataku na formularze POST. "/login.php:...:Nieprawid³owe dane" to format œcie¿ki do formularza (/login.php), gdzie znajduje siê parametr POST z loginem i has³em (^USER^, ^PASS^) oraz tekst informuj¹cy o b³êdzie logowania (Nieprawid³owe dane).
+   Na fotografii 4.8. przedstawiono przyk³ad skutecznego ataku brute-force wykonanego z u¿yciem narzêdzia Hydra. Kombinacja loginu admin oraz has³a password zosta³a poprawnie odgadniêta i zidentyfikowana przez narzêdzie jako prawid³owa.
+   
+    Fot. 4.8. Przyk³ad udanego ataku brute force z u¿yciem Hydra (znaleziono poprawn¹ parê login/has³o).
+   Za sukces uznano poprawne dopasowanie loginu i has³a, potwierdzone odpowiedzi¹ serwera inn¹ ni¿ komunikat o b³êdzie logowania.
+   W trakcie testów wykorzystano 10 loginów oraz 1000 hase³, co daje 10 000 prób. Listy zosta³y utworzone w oparciu o najpopularniejsze kombinacje (np. admin, user, 123456, password, itp.). Ich rozmiar dobrano tak, aby atak trwa³ krótko, lecz by³ wystarczaj¹co realistyczny do celów badawczych.
+   Tabela przedstawia zestawienie rezultatów testów ataków typu brute-force w ró¿nych konfiguracjach systemów operacyjnych oraz œrodowisk uruchomieniowych. We wszystkich przypadkach uzyskano poprawne uwierzytelnienie, co potwierdza skutecznoœæ ataku niezale¿nie od zastosowanego systemu, rodzaju œrodowiska (maszyna wirtualna lub fizyczna) oraz stanu zapory sieciowej. 
+   
+System operacyjnyŒrodowiskoZabezpieczeniaRezultatSzybkoœæ (próby/min)Windows 10fizyczny komputerw³¹czonepowodzenie3795Windows 10fizyczny komputerwy³¹czonepowodzenie3194Windows 10maszyna wirtualnaw³¹czonepowodzenie3680Windows 10maszyna wirtualnawy³¹czonepowodzenie3795Ubuntu 22.04fizyczny komputerw³¹czonepowodzenie3770Ubuntu 22.04fizyczny komputerwy³¹czonepowodzenie3195Ubuntu 22.04maszyna wirtualnaw³¹czonepowodzenie3750Ubuntu 22.04maszyna wirtualnawy³¹czonepowodzenie3683    Tab. 4.3. Wyniki testów ataku brute force w zale¿noœci od œrodowiska i konfiguracji zabezpieczeñ.
+   
+   Wszystkie testy zakoñczy³y siê powodzeniem, rozumianym jako poprawne odgadniêcie pary login–has³o na potrzeby logowania do testowej aplikacji webowej. Czasy trwania ataku oraz szybkoœæ (próby/min) pozostaj¹ w wiêkszoœci przypadków bardzo zbli¿one i wynosi³y po oko³o 2 minuty. Ró¿nice rzêdu kilkudziesiêciu prób na minutê s¹ naturalne i wynikaj¹ z losowych czynników œrodowiskowych (obci¹¿enie CPU, opóŸnienia sieciowe itp.). Wszystkie scenariusze zakoñczy³y siê pe³nym powodzeniem – login i has³o zosta³y odgadniête, bez wzglêdu na konfiguracjê. ¯aden z systemów nie odnotowa³ równie¿ prób w³amania siê do aplikacji (brak informacji w logach systemu oraz brak np. powiadomieñ systemowych). 
+   Obecnoœæ zapory sieciowej (zarówno Windows Firewall, jak i ufw w Ubuntu) nie wp³ynê³a istotnie na skutecznoœæ ataku brute-force. Jedyn¹ zauwa¿aln¹ ró¿nic¹ by³ nieznaczny spadek wydajnoœci w niektórych konfiguracjach z aktywn¹ zapor¹, co mo¿e wynikaæ z opóŸnieñ w przetwarzaniu pakietów.
+   System operacyjny nie mia³ istotnego wp³ywu na rezultat testów. Windows 10, jak i Ubuntu 22.04 pozwoli³y na skuteczne przeprowadzenie ataku przy wykorzystaniu identycznych parametrów i list loginów/hase³.
+   Nie odnotowano równie¿ ró¿nic miêdzy testami przeprowadzonymi na systemach postawionych na maszynach wirtualnych oraz fizycznym komputerze. W rezultacie mo¿na stwierdziæ, ¿e testowana aplikacja pozbawiona jakichkolwiek mechanizmów obronnych (np. limitów logowañ, CAPTCHA, opóŸnieñ czasowych) jest ca³kowicie podatna na ataki s³ownikowe, niezale¿nie od konfiguracji systemu, œrodowiska czy zapory sieciowej.
+   Analiza przeprowadzonych testów wykaza³a, ¿e ataki typu brute-force by³y skuteczne we wszystkich badanych konfiguracjach systemowych. Niezale¿nie od u¿ywanego systemu operacyjnego (Windows 10 lub Ubuntu 22.04), typu œrodowiska (maszyna fizyczna lub wirtualna), jak równie¿ stanu zapory sieciowej (aktywna lub nieaktywna). W ka¿dym przypadku narzêdzie Hydra zdo³a³o uzyskaæ poprawne dane uwierzytelniaj¹ce w czasie nieprzekraczaj¹cym kilku minut.
+   Powy¿sze wyniki wskazuj¹, ¿e domyœlna konfiguracja systemów operacyjnych, szczególnie w kontekœcie ochrony hostowanych aplikacji webowych, nie zawiera skutecznych mechanizmów przeciwdzia³aj¹cych atakom si³owym. Brak reakcji systemu na liczne nieudane próby logowania oznacza, ¿e zabezpieczenia tego typu musz¹ byæ wdra¿ane œwiadomie przez administratora systemu.
+   Aby zaradziæ takiemu stanowi rzeczy mo¿na by³oby np. wprowadziæ konfiguracjê  limitów po³¹czeñ i filtrowanie ruchu. Umo¿liwi³oby to blokowanie adresów IP generuj¹cych du¿¹ liczbê prób logowania. Innym sposobem mo¿e byæ po prostu tak¿e stosowanie uwierzytelniania dwusk³adnikowego na poziomie systemu operacyjnego lub aplikacji, co istotnie podnosi poziom bezpieczeñstwa, nawet przy skutecznym odgadniêciu loginu i has³a, jest to proste i jednoczeœnie trudne do z³amania zabezpieczenie, które jednak negatywnie wp³ywa na wygodê u¿ytkowania systemu lub aplikacji. 
+   Mimo, ¿e testowana aplikacja webowa by³a celowo uproszczona i pozbawiona zabezpieczeñ, kluczowym wnioskiem z badañ jest brak systemowych mechanizmów obrony przed zautomatyzowanym atakiem brute-force. Wdro¿enie odpowiednich zabezpieczeñ po stronie systemu operacyjnego ma zatem istotne znaczenie w ochronie us³ug dostêpnych w sieci.
+4.4 Eskalacja uprawnieñ
+4.4.1 Eskalacja uprawnieñ – wprowadzenie teoretyczne
+   Eskalacja uprawnieñ stanowi jedn¹ z najistotniejszych kategorii zagro¿eñ w kontekœcie bezpieczeñstwa systemów operacyjnych. Polega na nieuprawnionym uzyskaniu dostêpu do poziomu uprawnieñ wy¿szego ni¿ przypisany u¿ytkownikowi. Przyk³adowo, na przejêciu uprawnieñ administratora (root) przez zwyk³ego u¿ytkownika. Z perspektywy analizy systemów w œrodowiskach wirtualnych, eskalacja uprawnieñ jest szczególnie istotna, poniewa¿ umo¿liwia pe³ne przejêcie kontroli nad maszyn¹ wirtualn¹, a w niektórych przypadkach równie¿ nad systemem hosta [17].
+   Wyró¿nia siê dwa podstawowe typy ataków eskalacyjnych. Pierwszy typ to eskalacja pionowa (ang,. vertical privilege escalation), która polega na uzyskaniu przez u¿ytkownika wy¿szych uprawnieñ, ni¿ zosta³y mu nadane, np. przejêcie roli administratora przez u¿ytkownika o uprawnieniach ograniczonych. Drugim typem jest eskalacja pozioma (ang. horizontal privilege escalation), polegaj¹ca na uzyskaniu dostêpu do zasobów innego u¿ytkownika posiadaj¹cego ten sam poziom uprawnieñ, np. dostêp do konta wspó³u¿ytkownika [18].
+   W systemach Linux i Windows wystêpuje szereg technik eskalacyjnych, z których najczêœciej wykorzystywane obejmuj¹ m.in. b³êdne konfiguracje uprawnieñ sudo [18], wykorzystanie plików wykonywalnych z ustawionym bitem SUID, czy te¿ wykorzystanie znanych podatnoœci j¹dra systemu operacyjnego (np. Dirty COW, CVE-2016-5195).
+Eskalacja mo¿e te¿ byæ przeprowadzona przez niezabezpieczone skrypty startowe oraz pliki z nadanymi niepoprawnymi uprawnieniami [18].
+   W œrodowiskach wirtualnych eskalacja uprawnieñ mo¿e prowadziæ do eskalacji miêdzy maszynami lub nawet do przejêcia kontroli nad systemem hosta.
+   Aby ograniczyæ ryzyko eskalacji uprawnieñ mo¿na chocia¿by stosowaæ mechanizmy takie jak Mandatory Access Control (MAC), stosowaæ zasady minimalnych uprawnieñ oraz nie zapominaæ o regularnych aktualizacjach systemów operacyjnych i bibliotek. Skuteczne mo¿e te¿ byæ opisane przez Hiroki Kuzono oraz Toshihiro Yamauchi zastosowanie nowoczesnych technik obronnych, takich jak np. Kernel Data Relocation Mechanism (KDRM), które ograniczaj¹ mo¿liwoœæ przeprowadzania ataków na j¹dro systemu [19].
+4.4.2 Eskalacja uprawnieñ przez plik z ustawionym bitem SUID4
+   Celem testu jest sprawdzenie, czy niepoprawne nadanie bitu SUID plikowi /bin/bash umo¿liwi u¿ytkownikowi o ograniczonych uprawnieniach uzyskanie dostêpu do pow³oki z uprawnieniami administratora (root). Scenariusz symuluje b³¹d konfiguracyjny, który mo¿e wyst¹piæ w œrodowiskach produkcyjnych wskutek nieprawid³owej administracji lub dzia³ania z³oœliwego oprogramowania. Test nie mo¿e zostaæ przeprowadzony na systemie Windows, a wiêc podatnoœæ ta zosta³a przetestowana jedynie na Ubuntu 22.04. 
+   Przez to, ¿e wirtualizacja wprowadza dodatkow¹ warstwê poœrednicz¹c¹ miêdzy systemem operacyjnym a sprzêtem, warto sprawdziæ czy hipernadzorca nie modyfikuje dzia³ania takich mechanizmów i nie wprowadza ró¿nic w skutecznoœci ataku.
+   Utworzono u¿ytkownika testowego o nazwie testuser1, który posiada jedynie podstawowe uprawnienia. SUID zosta³o ustawione rêcznie poprzez komendê sudo chmod u+s /bin/bash. Sam atak polega na uruchomieniu /bin/bash -p przez nieuprzywilejowanego u¿ytkownika, gdzie -p oznacza privileged mode, czyli zachowanie uprawnieñ administratora. 
+   Test przebiega³ w taki sposób, ¿e pocz¹tkowo  zalogowano siê na konto root, nadano plikowi /bin/bash bit SUID:
+   sudo chmod u+s /bin/bash
+Nastêpnie alogowano siê na konto testuser1, uruchomiono now¹ pow³okê z opcj¹ -p: /bin/bash -p
+Na koñcu sprawdzono ID u¿ytkownika  komend¹ id. Wynik w konsoli by³ nastêpuj¹cy:
+   uid=1001(testuser1) gid=1001(testuser1) euid=0(root) groups=1001(testuser1),100(users)
+   
+   Obserwacja polecenia id potwierdzi³a skuteczn¹ eskalacjê uprawnieñ. U¿ytkownik testuser1 uzyska³ efektywne uprawnienia roota (euid=0). Wynik by³ identyczny na maszynie wirtualnej i fizycznej.
+   
+ParametrUbuntu – maszyna wirtualnaUbuntu – fizyczny systemSystem operacyjnyUbuntu 22.04 LTSUbuntu 22.04 LTSU¿ytkownik testowytestuser1testuser1B³¹d konfiguracyjnySUID na /bin/bashSUID na /bin/bashPolecenie atakuj¹ce/bin/bash -p/bin/bash -pEfektywny UID po ataku0 (root)0 (root)WynikPowodzeniePowodzenie    Tab. 4.4. – Wyniki testu SUID + /bin/bash
+
+   Test wykaza³, ¿e niepoprawna konfiguracja pliku systemowego poprzez nadanie bitu SUID prowadzi do natychmiastowej i pe³nej eskalacji uprawnieñ. Co istotne, wynik by³ niezale¿ny od œrodowiska uruchomieniowego. Maszyna wirtualna, jak i fizyczna zareagowa³y identycznie.
+   To potwierdza, ¿e œrodowisko wirtualne w tym przypadku nie wp³ywa na podatnoœæ na ten typ ataku. Kluczowym czynnikiem jest b³êdna konfiguracja pliku wykonywalnego i brak kontroli nad nadanymi uprawnieniami.
+   Aby unikn¹æ takich podatnoœci niedopuszczalne jest rêczne nadawanie bitu SUID plikom takim jak /bin/bash, a tak¿e w œrodowiskach produkcyjnych powinno siê monitorowaæ zmiany uprawnieñ systemowych plików binarnych.
+
+4.4.3 Eskalacja uprawnieñ przez b³êdn¹ konfiguracjê sudo5
+   Celem testu by³o zbadanie wp³ywu b³êdnej konfiguracji uprawnieñ w pliku /etc/sudoers na mo¿liwoœæ eskalacji uprawnieñ u¿ytkownika lokalnego. Przetestowano scenariusz, w którym u¿ytkownik ma mo¿liwoœæ uruchomienia programu nano6 jako administrator, bez koniecznoœci podawania has³a.
+   Test zosta³ przeprowadzony na dwóch œrodowiskach z systemem Ubuntu, czyli maszynie wirtualnej oraz systemie zainstalowanym bezpoœrednio na fizycznym komputerze. Wykorzystano u¿ytkownika testuser1 z ograniczonymi uprawnieniami. W pliku konfiguracyjnym /etc/sudoers dodano nastêpuj¹cy wpis:
+   testuser1 ALL=(ALL) NOPASSWD: /usr/bin/nano
+Pomimo, ¿e wpis ten zosta³ dodany na potrzeby testu, ma on realne odniesienie do sytuacji wystêpuj¹cych w rzeczywistych œrodowiskach produkcyjnych. Administratorzy nierzadko udzielaj¹ u¿ytkownikom dostêpu do konkretnych programów (np. edytorów tekstowych) bez has³a, nie bêd¹c œwiadomymi, ¿e niektóre z tych aplikacji, takie jak nano czy vim, umo¿liwiaj¹ wywo³anie pow³oki systemowej. Taki dostêp mo¿e prowadziæ do pe³nej eskalacji uprawnieñ. Test stanowi zatem symulacjê b³êdnej, ale spotykanej konfiguracji bezpieczeñstwa.
+	Test przebiega³ w taki sposób, ¿e u¿ytkownik z ograniczonymi uprawnieniami (testuser1) wywo³a³ polecenie:
+   sudo /usr/bin/nano /etc/shadow
+   Dziêki wpisowi NOPASSWD, polecenie zosta³o wykonane bez ¿¹dania has³a. Edytor nano zosta³ otwarty z uprawnieniami administratora, umo¿liwiaj¹c podgl¹d oraz edycjê wra¿liwego pliku systemowego. Nastêpnie za pomoc¹ skrótu Ctrl+R, a nastêpnie Ctrl+X, uruchomiono tryb poleceñ, w którym wpisano: 
+   reset; bash
+W efekcie u¿ytkownik otrzyma³ pe³n¹ pow³okê systemow¹ z uprawnieniami administratora.
+
+ParametrMaszyna wirtualnaFizyczny systemMo¿liwoœæ eskalacji uprawnieñTakTakKoniecznoœæ podania has³aNieNieDostêp do plików systemowychTak (np. /etc/shadow)Tak (np. /etc/shadow)Tab. 4.5. Wyniki testu eskalacji uprawnieñ przez b³êdn¹ konfiguracjê sudo.
+   
+   W obu œrodowiskach testowych b³êdna konfiguracja uprawnieñ w pliku sudoers doprowadzi³a do skutecznej eskalacji uprawnieñ. Test potwierdzi³, ¿e nawet pozornie bezpieczne i ograniczone polecenia (takie jak nano) mog¹ zostaæ wykorzystane do uzyskania pe³nego dostêpu do systemu.
+   Nale¿y zatem unikaæ wpisów NOPASSWD dla programów umo¿liwiaj¹cych interakcjê z systemem, takich jak nano, vim czy bash. W razie potrzeby umo¿liwienia dostêpu do pojedynczych poleceñ  mo¿na korzystaæ z wrapperów7 (np. script.sh z ograniczon¹ funkcjonalnoœci¹) oraz dodatkowych mechanizmów kontroli (SELinux, AppArmor).
+
+4.4.4 Próba eskalacji uprawnieñ poprzez dostêp do /dev/mem
+   Celem testu by³o sprawdzenie, czy u¿ytkownik o ograniczonych uprawnieniach mo¿e uzyskaæ dostêp do urz¹dzenia /dev/mem, które odzwierciedla fizyczn¹ pamiêæ systemu. Taki dostêp mo¿e potencjalnie umo¿liwiæ bezpoœredni¹ manipulacjê danymi w pamiêci, w tym równie¿ przejêcie kontroli nad procesami systemowymi lub eskalacjê do uprawnieñ administratora.
+   Test przeprowadzono na dwóch platformach, czyli systemie Ubuntu 22.04 dzia³aj¹cym jako maszyna wirtualna oraz na identycznym systemie zainstalowanym na sprzêcie fizycznym. U¿ytkownik testowy (testuser1) zosta³ dodany do grupy kmem, która w teorii umo¿liwia dostêp do /dev/mem. J¹dro systemu w obu przypadkach mia³o aktywn¹ ochronê w postaci opcji CONFIG_STRICT_DEVMEM=y.
+   Test przebiega³ w taki sposób, ¿e u¿ytkownik sprawdzi³ uprawnienia do /dev/mem, poprzez komendê:
+   ls -l /dev/mem
+Nastêpnie podj¹³ próbê odczytu zawartoœci pamiêci:
+   hexdump -C /dev/mem | head
+Spróbowa³ równie¿ zapisaæ dane do /dev/mem:
+   echo "AAAA" | dd of=/dev/mem bs=1 seek=0 count=4
+We wszystkich przypadkach operacje zosta³y zablokowane z powodu braku odpowiednich uprawnieñ lub aktywnej ochrony j¹dra.
+
+ParametrMaszyna wirtualnaFizyczny systemU¿ytkownik w grupie kmemTakTakOdczyt z /dev/mem mo¿liwyNie (permission denied)Nie (operation not permitted)Zapis do /dev/mem mo¿liwyNieNieCONFIG_STRICT_DEVMEM aktywneTakTakTab. 4.6. Wyniki testu eskalacji uprawnieñ przez dostêp do /dev/mem.
+   
+   Test wykaza³, ¿e dostêp do /dev/mem zosta³ skutecznie zablokowany w obu œrodowiskach, pomimo przypisania u¿ytkownika do grupy kmem. Decyduj¹cym czynnikiem okaza³y siê restrykcje j¹dra systemowego (CONFIG_STRICT_DEVMEM=y), które uniemo¿liwiaj¹ odczyt i zapis fizycznej pamiêci przez procesy nieuprzywilejowane.
+   Potencjalne ró¿nice miêdzy œrodowiskiem wirtualnym a fizycznym mog³yby siê pojawiæ w przypadku odmiennych implementacji urz¹dzeñ /dev/mem przez hipernadzorcê. W systemie zainstalowanym na maszynie fizycznej /dev/mem, odwzorowuje fizyczny adres przestrzeni RAM, podczas gdy w œrodowisku wirtualnym dostêp ten mo¿e byæ dodatkowo filtrowany lub w ogóle emulowany przez warstwê wirtualizacji. Pomimo braku ró¿nic w wynikach testu, architekturalnie mo¿liwe s¹ rozbie¿noœci w zachowaniu przy innym j¹drze lub wersji hipernadzorcy.
+   
+4.4.5 Eskalacja uprawnieñ poprzez podatnoœæ sprzêtow¹ Rowhammer
+   Celem testu by³o sprawdzenie, czy technika ataku Rowhammer, polegaj¹ca na fizycznym zak³óceniu dzia³ania komórek pamiêci RAM, mo¿e zostaæ skutecznie przeprowadzona w œrodowisku maszyny wirtualnej oraz na systemie uruchomionym bezpoœrednio na sprzêcie. Porównanie mia³o na celu ocenê potencjalnych ró¿nic w podatnoœci miêdzy tymi œrodowiskami.
+   Test zosta³ wykonany z wykorzystaniem narzêdzia Rowhammerjs udostêpnionego przez IAIK (Graz University of Technology). Test zosta³ przeprowadzony jedynie na systemie Linux. U¿ytkownik testowy mia³ dostêp do kompilacji i uruchomienia aplikacji C++ z poziomu administratora.
+   Badanie przeprowadzono w taki sposób, ¿e sklonowano repozytorium i przeprowadzono kompilacjê:
+   git clone https://github.com/IAIK/rowhammerjs.git
+   cd rowhammerjs/native
+   make
+Nastêpnie uruchomiono test z uprawnieniami administratora:
+   sudo ./rowhammer
+Test automatycznie rozpocz¹³ „uderzanie” w komórki pamiêci RAM. Po ok. 10 minutach test zosta³ rêcznie przerwany przez u¿ytkownika.
+
+
+ParametrMaszyna wirtualnaFizyczny systemCzy test siê uruchomi³TakTakCzy trwa³ nieprzerwanieTak (do rêcznego zatrzymania)Tak (do rêcznego zatrzymania)Czy wykryto problemy (np. b³êdy bitów)Nie stwierdzono (brak alertów)Nie stwierdzono (brak alertów)Czy pojawi³y siê komunikaty o trudnoœciach z dostêpem do stron pamiêciTak (czêœciowe ostrze¿enia)Tak (czêœciowe ostrze¿enia)Tab. 4.7. Wyniki testu eskalacji uprawnieñ poprzez podatnoœæ Rowhammer.
+   
+   Test wykaza³, ¿e zarówno œrodowisko wirtualne, jak i fizyczne umo¿liwiaj¹ uruchomienie narzêdzia Rowhammer, jednak nie odnotowano faktycznych b³êdów bitowych podczas trwania testu. Jest to zgodne z oczekiwaniami, poniewa¿ wiêkszoœæ nowoczesnych systemów wykorzystuje mechanizmy ochrony (np. ECC, zwiêkszon¹ izolacjê pamiêci), które zmniejszaj¹ podatnoœæ na ataki typu Rowhammer.
+   Ró¿nice miêdzy œrodowiskami mog¹ jednak wystêpowaæ w bardziej ekstremalnych warunkach, np. przy wykorzystaniu starszego sprzêtu lub pamiêci bez ECC. W œrodowiskach wirtualnych dodatkow¹ warstwê zabezpieczenia stanowi hipernadzorca, który poœredniczy w dostêpie do fizycznej pamiêci RAM. Oznacza to, ¿e œrodowisko natywne jest potencjalnie bardziej podatne na atak Rowhammer ni¿ œrodowisko wirtualne.
+   Fakt, ¿e test nie zakoñczy³ siê samoczynnie, wynika z jego charakteru, poniewa¿ narzêdzie celowo próbuje wywo³aæ niestabilnoœæ pamiêci przez d³ugotrwa³e operacje. W przypadku braku wykrycia podatnoœci, test mo¿e trwaæ nawet godzinami.
+4.4.6 Dostêp do urz¹dzeñ PCI/USB 
+   Test mia³ na celu porównanie mo¿liwoœci dostêpu do urz¹dzeñ PCI oraz USB przez u¿ytkownika bez uprawnieñ administracyjnych w systemach Ubuntu oraz Windows, uruchomionych na systemie natywnym oraz w œrodowisku wirtualnym. Za³o¿eniem by³o sprawdzenie, czy œrodowisko wirtualne wprowadza istotne ograniczenia w zakresie widocznoœci i interakcji ze sprzêtem, które mog³yby zmniejszyæ ryzyko eskalacji uprawnieñ poprzez analizê lub manipulacjê urz¹dzeniami fizycznymi.
+   Testy przeprowadzono na kontach u¿ytkowników nieposiadaj¹cych uprawnieñ administratora. W œrodowisku Ubuntu wykorzystano narzêdzia lsusb, lspci, odczyty z /dev/bus/usb oraz /sys/bus/pci w celu sprawdzenia mo¿liwoœci dostêpu do danych sprzêtowych. W systemie Windows zastosowano polecenia PowerShell (Get-PnpDevice, Get-WmiObject) pozwalaj¹ce na odczyt danych o urz¹dzeniach PCI i USB. 
+
+
+Fot. 4.9. Wyniki polecenia lsusb w systemie Ubuntu w œrodowisku wirtualnym VMware.
+
+
+Fot. 4.10. Wyniki polecenia lsusb w systemie Ubuntu, uruchomionym na maszynie fizycznej.
+   
+   Wyniki pokaza³y, ¿e w systemie Ubuntu uruchomionym na fizycznym sprzêcie u¿ytkownik nieuprzywilejowany ma pe³en dostêp do listy urz¹dzeñ PCI i USB (fot. 4.10) oraz mo¿e bezpoœrednio odczytywaæ ich konfiguracjê i dane za pomoc¹ przestrzeni /sys oraz /dev. W œrodowisku wirtualnym Ubuntu (fot. 4.9) dostêp ten jest znacz¹co ograniczony. U¿ytkownik widzi tylko urz¹dzenia przypisane przez hipernadzorcê, a odczyt danych z urz¹dzeñ fizycznych jest czêsto niemo¿liwy. 
+   W systemie Windows, dzia³aj¹cym natywnie, równie¿ uzyskano pe³n¹ widocznoœæ fizycznych urz¹dzeñ i mo¿liwoœæ odczytu szczegó³owych informacji, takich jak identyfikatory producenta (VID, PID), typy urz¹dzeñ czy przypisane porty. W maszynie wirtualnej Windows zakres ten ogranicza siê jedynie do urz¹dzeñ emulowanych przez VMware. Urz¹dzenia fizyczne nieprzekazane hipernadzorcê s¹ niewidoczne.
+   
+SystemMaszynaPCI - widoczne urz¹dzeniaUSB - odczyt danychDostêp do /sys lub /devUwagiUbuntuNatywnawszystkie fizycznetaktakPe³ny dostêpUbuntuWirtualnatylko przypisane przez VMzale¿ne od passthroughograniczonyWidocznoœæ zale¿na od hipernadzorcyWindowsNatywnawszystkie fizycznetakbrak /sysDostêp przez PowerShellWindowsWirtualnatylko emulowanetylko wirtualnebrak /sysBrak dostêpu do fizycznych urz¹dzeñ    Tab. 4.8. Wyniki testu eskalacji uprawnieñ poprzez dostêp do urz¹dzeñ PCI i USB
+   
+   Wyniki wskazuj¹, ¿e œrodowisko natywne zapewnia wiêkszy poziom dostêpu do sprzêtu z poziomu u¿ytkownika bez uprawnieñ administratora. W systemie Ubuntu mo¿liwy jest dostêp do danych binarnych i rejestrów urz¹dzeñ, co w okreœlonych scenariuszach mog³oby pos³u¿yæ do rekonstrukcji dzia³ania sprzêtu, pasywnego pods³uchiwania czy nawet prób manipulacji. System Windows równie¿ udostêpnia istotne informacje o sprzêcie, jednak g³ównie w formie metadanych mo¿liwych do odczytania przez PowerShell.
+   Œrodowiska wirtualne skutecznie ograniczaj¹ dostêp do warstwy sprzêtowej. Hipernadzorca pe³ni funkcjê filtra, dziêki któremu tylko jawnie przekazane urz¹dzenia mog¹ byæ widoczne i obs³ugiwane przez system goœcia. W praktyce oznacza to, ¿e u¿ytkownik dzia³aj¹cy w maszynie wirtualnej, nawet jeœli posiada wiedzê techniczn¹ i narzêdzia do analizy sprzêtu, nie bêdzie w stanie dotrzeæ do urz¹dzeñ, których nie udostêpni³ mu administrator hipernadzorcy. To odseparowanie znacz¹co utrudnia eskalacjê uprawnieñ opart¹ na interakcji z urz¹dzeniami fizycznymi.
+4.4.7 Podsumowanie rozdzia³u i wnioski dotycz¹ce eskalacji uprawnieñ
+   W rozdziale poœwiêconym testom eskalacji uprawnieñ przeprowadzono szereg szczegó³owych eksperymentów maj¹cych na celu ocenê mo¿liwoœci uzyskania wy¿szych uprawnieñ przez u¿ytkowników nieuprzywilejowanych, zarówno w œrodowiskach fizycznych, jak i wirtualnych. Analiza objê³a systemy Ubuntu i Windows uruchomione natywnie oraz w maszynach wirtualnych VMware. Choæ testy dotyczy³y obu platform, znaczna czêœæ scenariuszy zosta³a zrealizowana w³aœnie w systemie Ubuntu. Wynika to z faktu, ¿e Linux, jako system otwartoŸród³owy (ang. open-source), udostêpnia u¿ytkownikom znacznie wiêcej informacji o systemie, jego strukturze i sprzêcie, umo¿liwiaj¹c dog³êbn¹ analizê mechanizmów dzia³ania oraz potencjalnych wektorów ataku. Dziêki temu mo¿liwe by³o zbadanie takich aspektów jak dostêp do pamiêci j¹dra poprzez /dev/mem, analiza plików SUID czy bezpoœrednia interakcja z urz¹dzeniami USB i PCI poprzez przestrzenie /dev oraz /sys. W systemie Windows wiele z tych operacji jest domyœlnie zablokowanych lub realizowanych poprzez warstwy poœrednie, takie jak rejestr, PowerShell lub us³ugi systemowe, co utrudnia przeprowadzenie analogicznych testów w sposób technicznie równowa¿ny.
+   Œrodowiska wirtualne skutecznie ograniczaj¹ dostêp do warstwy sprzêtowej, zw³aszcza w kontekœcie urz¹dzeñ PCI i USB, co znacz¹co utrudnia eskalacjê uprawnieñ bazuj¹c¹ na analizie lub manipulacji sprzêtem. W przypadku klasycznych technik, takich jak wykorzystanie plików SUID czy próby dostêpu do /dev/mem, ró¿nice miêdzy œrodowiskiem natywnym a wirtualnym s¹ pomijalne. Skutecznoœæ ataku zale¿y g³ównie od konfiguracji systemu, a nie od jego osadzenia w maszynie fizycznej czy wirtualnej.
+   Choæ wirtualizacja nie eliminuje wszystkich wektorów ataku, znacz¹co ogranicza te zwi¹zane z fizycznym dostêpem do sprzêtu. Tym samym maszyny wirtualne stanowi¹ efektywn¹ warstwê ochronn¹ w scenariuszach, gdzie pe³na izolacja sprzêtowa u¿ytkowników jest istotna z punktu widzenia bezpieczeñstwa.
+4.5 Kana³y integracyjne miêdzy systemem gospodarza a goœcia w VMware (schowek, foldery wspó³dzielone) – ryzyko nieautoryzowanego wycieku danych
+   Wirtualizacja dostarcza mechanizmów integracyjnych pomiêdzy systemem gospodarza a maszynami wirtualnymi, które podnosz¹ u¿ytecznoœæ œrodowiska, lecz jednoczeœnie tworz¹ kana³y przep³ywu danych. W kontekœcie VMware Workstation s¹ to przede wszystkim funkcje realizowane przez VMware Tools, m.in. wspó³dzielony schowek (ang. Clipboard) oraz wspó³dzielone foldery (ang. Shared Folders). W odró¿nieniu od klasycznych scenariuszy komunikacji sieciowej (NAT/bridged/host-only), dzia³anie tych kana³ów nie zale¿y od topologii sieci wirtualnej, lecz od konfiguracji integracji systemu gospodarza i systemu goœcia oraz aktywnoœci komponentów Tools. 
+   
+
+    Rys. 5.1. Stanowisko: host Windows i goœæ (Windows/Ubuntu); kana³y VMware Tools — schowek i wspó³dzielone foldery.
+
+   Celem rozdzia³u jest weryfikacja, w jakim stopniu konfiguracja kana³ów miêdzy goœciem a gospodarzem wp³ywa na mo¿liwoœæ i kierunek transferu danych oraz jakie ryzyka z tego wynikaj¹. Analizie poddano dwa mechanizmy: Schowek, w³¹czony w obu kierunkach oraz Foldery wspó³dzielone, w trybach Disabled, Read-only i Read-write, z ocen¹ odczytu i zapisu po obu stronach. 
+4.5.1 Schowek – przebieg i wyniki
+   Dla Schowka wykonano piêæ prób na kierunek (host do goœæ oraz goœæ do host) z pomiarem czasu w narzêdziach systemowych. W Ubuntu u¿yto wl-clipboard (Wayland). Integralnoœæ sprawdzano przez SHA-2568. 
+   We wszystkich próbach uzyskano pe³n¹ skutecznoœæ transferu tekstu w obu kierunkach (z hosta do goœcia oraz z goœcia do hosta). W systemie Windows jako goœciu czasy pojedynczych operacji mieœci³y siê w zakresie oko³o 0,001–0,004 s, a w systemie Ubuntu by³o to od oko³o 0,03 do oko³o 0,06 s. We wszystkich przypadkach potwierdzono integralnoœæ przekazywanej treœci (zgodnoœæ sum kontrolnych SHA-256 pomiêdzy Ÿród³em a plikiem wynikowym). Pomiary prowadzono w stabilnym kontekœcie sesji u¿ytkownika. Obserwacje pokaza³y równie¿, ¿e prze³¹czanie kont w trakcie testów mo¿e prowadziæ do braku synchronizacji schowka pomiêdzy systemami, co nie jest równoznaczne z wy³¹czeniem funkcji.
+PróbaKierunekCzas [s]1z hosta do goœcia0,003982z hosta do goœcia0,001983z hosta do goœcia0,002474z hosta do goœcia0,003085z hosta do goœcia0,002386z goœcia do hosta0,001557z goœcia do hosta0,001238z goœcia do hosta0,000869z goœcia do hosta0,0016710z goœcia do hosta0,00092    Tab. 4.9. Schowek — Windows jako goœæ: czasy operacji „z hosta do goœcia” i „z goœcia do hosta”
+
+
+    
+PróbaKierunekCzas [s]1z hosta do goœcia0,050002z hosta do goœcia0,030003z hosta do goœcia0,040004z hosta do goœcia0,050005z hosta do goœcia0,060006z goœcia do hosta0,003847z goœcia do hosta0,001748z goœcia do hosta0,001809z goœcia do hosta0,0021010z goœcia do hosta0,00209    Tab. 4.10. Schowek — Ubuntu jako goœæ: czasy operacji „z hosta do goœcia” i „z goœcia do hosta”
+   
+   W badaniach nie wykorzystywano hosta z systemem Ubuntu. System ten wystêpowa³ wy³¹cznie jako maszyna wirtualna, a odczyty „z goœcia do hosta” dotycz¹ hosta Windows. Ró¿nica czasów pomiêdzy goœciem Windows a goœciem Ubuntu ma charakter operacyjny (narzêdzia u¿ytkownika i œrodowisko graficzne). W badanej konfiguracji schowek stanowi szybki i powtarzalny kana³ wymiany danych pomiêdzy hostem a maszynami wirtualnymi. Sama obecnoœæ mechanizmu, przy aktywnych komponentach narzêdziowych w bie¿¹cej sesji u¿ytkownika, umo¿liwia niemal natychmiastowy transfer tekstu poza p³aszczyzn¹ sieci.
+
+4.5.2 Wspó³dzielone foldery – przebieg i wyniki
+   Dla oceny mechanizmu utworzono dwa udzia³y po stronie hosta. Pierwszy w trybie tylko do odczytu (Read-only), natomiast drugi z prawem zapisu (Read-write). Tryb Disabled, zgodnie z oczekiwaniami, skutkowa³ brakiem widocznoœci udzia³ów i uniemo¿liwia³ wykonanie jakichkolwiek operacji wejœcia–wyjœcia.
+   
+Fot. 4.11. Badanie trybu Read-only – nieudana próba utworzenia nowego pliku w folderze wspó³dzielonym z poziomu maszyny wirtualnej.
+   
+W trybie Read-only odczyt z hosta do goœcia by³ w pe³ni skuteczny, natomiast zapis z goœcia do hosta by³ blokowany (fot. 4.11). W trybie Read-write odczyt i zapis dzia³a³y w obu kierunkach. We wszystkich przypadkach potwierdzono integralnoœæ treœci zgodnoœci¹ sum kontrolnych. Czas przenoszenia niewielkich plików by³ pomijalny, a dla wiêkszych zale¿a³ g³ównie od podsystemu dyskowego hosta. 
+
+TrybWidocznoœæ udzia³u w goœciuOdczyt z hosta do goœciaZapis z goœcia do hostaUwagiDisabledNieNieNieKana³ wy³¹czony.Read-onlyTakTakNieJednokierunkowy przep³yw informacji z hosta.Read-writeTakTakTakDwukierunkowa wymiana plików; integralnoœæ potwierdzona.    Tab. 4.11. Wspó³dzielone foldery — wyniki.
+   
+   Wspó³dzielone foldery stanowi¹ kana³ przep³ywu danych niezale¿ny od konfiguracji sieci. Tryb Read-only pozwala na kontrolowany, jednokierunkowy wgl¹d goœcia w wybrane zasoby hosta, natomiast Read-write otwiera pe³n¹ wymianê plików, co istotnie zwiêksza powierzchniê ryzyka.
+   Wyniki by³y zgodne dla systemu Windows oraz Ubuntu i potwierdzaj¹, ¿e integracje host-goœæ istotnie modyfikuj¹ powierzchniê ryzyka w œrodowiskach wirtualnych. Decyduj¹ca jest konfiguracja mechanizmów Tools. Ich wy³¹czenie lub restrykcyjne ustawienie ogranicza mo¿liwoœæ wycieku danych poza p³aszczyzn¹ sieci, a tak¿e ogranicza zagro¿enia wynikaj¹ce np. z mo¿liwoœci przeniesienia plików wykonywalnych, zawieraj¹cych z³oœliwy kod. 
+   
+
+5. Zakoñczenie i wnioski
+   [NAPISAÆ]. 
+   
+Literatura
+   [1] Virtualization Throughout the Software Lifecycle, Sarah N. Crutchfield
+   [2] Virtualization and Security Aspects: An Overview, Rui Filipe Pereira, Rui Miguel Silva & Jo?o Pedro Orvalho
+   [3] Virtualization and Forensics A Digital Forensic Investigator’s Guide to Virtual Environments
+   [4] VMware vSphere Essentials: A Practical Approach to vSphere Deployment and Management Luciano Patr?o  
+   [5] Optimal guest file system for type-2 hypervisorbased virtualization in Virtual box
+   [6] https://uefi.org/specs/PI/1.8/V2_Overview.html
+   [7] UEFI Memory Forensics: A Framework for UEFI Threat Analysis Kalanit Suzan Segal?
+   [8] https://www.kali.org/docs/introduction/what-is-kali-linux/
+   [9] Patel, N. P., Patel, R. G., & Patel, D. R. (2009). Packet Sniffing: Network Wiretapping. W: 2009 IEEE International Advance Computing Conference (IACC 2009) (s. 2691-2696). Patiala, Indie: IEEE.
+   [10] Daniel G. Graham, Ethical Hacking, No Starch Press, 2021, rozdzia³ 2.
+   [11] Alina Alina; Shipra Saraswat, Understanding, Implementing and Combating Sniffing and ARP Spoofing. 4th Int. Conf. on Recent Developments in Control, Automation & Power Engineering (RDCAPE), 2021.
+   [12] Sengupta, D. (2013, October 19). ARP spoofing attack and detection using Wireshark. In Packet Analysis of Network Traffic.
+   [13] Assegie, T. A., & Nair, P. S. (2019). Comparative study on methods used in prevention and detection against Address Resolution Protocol spoofing attack. Journal of Theoretical and Applied Information Technology.
+   [14] ELKILANI, Wail, AMIN, Khalid M. An automated approach for preventing ARP spoofing attack using static ARP entries. International Journal of Advanced Computer Science and Applications. 2014.
+   [15] BULL, Ronny L., MATTHEWS, Jeanna N. i TRUMBULL, Kaitlin A. VLAN hopping, ARP poisoning and Man-In-The-Middle attacks in virtualized environments. [Referat konferencyjny]. Sierpieñ 2016
+   [16] K. Swathi, “Brute Force Attack on Real World Passwords,” International Journal of Research Publication and Reviews, Nov. 2022.
+   [17] Happe, L., & Cito, J. (2024). Got Root? A Linux Priv-Esc Benchmark. arXiv preprint arXiv:2405.02106.
+   [18] Safe Security. (2021). A Hands-on Approach to Linux Privilege Escalation. Retrieved from https://safe.security/wp-content/uploads/a-hands-on-approach-to-linux-privilege-escalation.pdf
+   [19] SpringerLink. (2024). Mitigation of privilege escalation attack using kernel data relocation mechanism (KDRM). Journal of Computer Security.
+   [20] Scarfone K., Souppaya M., Hoffman P., Guide to Security for Full Virtualization Technologies (NIST SP 800-125)
+   [21] Pék, Buttyán, Bencsáth (2013): A Survey of Security Issues in Hardware Virtualization, ACM Computing Surveys 45(3) 
+   [22] Glãvan D., Rãcuciu C., Moinescu R., Eftimie S., Sniffing attacks on computer networks, Scientific Bulletin of Naval Academy, t. XXIII, nr 1, 2020.
+   [23] Mahipal S., Ceronmani Sharmila V., Virtual Machine Security Problems and Countermeasures for Improving QoS in Cloud Computing.
+   [24] Were M., Singh R. S., Odawa J., Security Evaluation Framework for Virtualised Environments.
+
+Za³¹cznik A. Kod aplikacji testowej do ataków brute-force
+A.1 login.php
+Plik login.php realizuje podstawow¹ walidacjê danych przesy³anych przez formularz. Sprawdzenie poprawnoœci odbywa siê na podstawie zdefiniowanych na sztywno danych uwierzytelniaj¹cych.
+<?php
+$valid_user = "admin";
+$valid_pass = "password";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"] ?? '';
+    $password = $_POST["password"] ?? '';
+
+    if ($username === $valid_user && $password === $valid_pass) {
+        echo "Zalogowano pomyœlnie";
+    } else {
+        echo "Nieprawid³owe dane logowania";
+    }
+}
+?>
+A.2 login.html
+Plik login.html odpowiada za interfejs u¿ytkownika.
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Test logowania</title>
+</head>
+<body>
+  <h2>Logowanie testowe</h2>
+  <form action="login.php" method="post">
+    Login: <input type="text" name="username"><br><br>
+    Has³o: <input type="password" name="password"><br><br>
+    <input type="submit" value="Zaloguj">
+  </form>
+</body>
+</html>
+A.3 docker-compose.yml
+Plik docker-compose.yml umo¿liwia ³atwe i szybkie uruchomienie aplikacji lokalnie lub w œrodowisku testowym.
+version: '3.1'
+
+services:
+  bruteforce:
+    build: .
+    ports:
+      - "8080:80"
+    container_name: bruteforce_test
+A.4 Dokckerfile
+   W celu uruchomienia serwera aplikacji wykorzystywany jest obraz PHP z Apache. Dockerfile definiuje œrodowisko uruchomieniowe.
+   FROM php:8.1-apache
+   COPY . /var/www/html/
+   EXPOSE 80
+    1 Interfejs wlan0 w systemach Linux odnosi siê do po³¹czenia bezprzewodowego i mo¿e byæ u¿ywany do analizy ruchu sieciowego, jeœli dzia³a w trybie monitorowania.
+    2 Promiscius to tryb pracy interfejsu sieciowego, w którym przechwytywane s¹ wszystkie pakiety przechodz¹ce przez sieæ. 
+    3 Podana strona umo¿liwia przeprowadzanie testów bezpieczeñstwa, poprzez przechwytywanie danych logowania przes³anych przez protokó³ HTTP.
+       4 Bit SUID - atrybut plików wykonywalnych w systemach uniksowych, który powoduje, ¿e proces uruchomiony z takiego pliku dzia³a z uprawnieniami w³aœciciela.
+       5 Sudo – narzêdzie systemów Unix/Linux umo¿liwiaj¹ce wykonanie polecenia z uprawnieniami innego u¿ytkownika, najczêœciej administratora. Stosowane jest w celu tymczasowego podniesienia uprawnieñ bez koniecznoœci logowania siê na konto administratora.
+       6 Nano - prosty edytor tekstu w terminalu Linux/Unix, s³u¿¹cy do edycji plików systemowych i skryptów.
+       7 Wrapper - prosty skrypt lub program poœrednicz¹cy, który ogranicza funkcjonalnoœæ wywo³ywanego polecenia, np. pozwala na wykonanie tylko jednej, œciœle zdefiniowanej operacji zamiast pe³nego dostêpu do programu.
+       8 SHA-256 to funkcja kryptograficzna, przekszta³caj¹ca dowolne dane wejœciowe w 256-bitowy unikalny ci¹g znaków. Wykorzystuje siê j¹ m.in. do weryfikacji autentycznoœci i integralnoœci danych.
+   ---------------
+   
+   ------------------------------------------------------------
+   
+   ---------------
+   
+   ------------------------------------------------------------
+   
+   17
+   
+   
