@@ -7,27 +7,32 @@
         <mxCell id="zY-tMj56ANNCXmde_FCD-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#000000);" edge="1" parent="1" source="VyvOBXi4zYoO4qcPIi6Q-1" target="zY-tMj56ANNCXmde_FCD-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-8" value="Uruchomienie" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-7">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-8" value="sudo /usr/bin/nano /etc/shadow" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-7">
           <mxGeometry x="-0.2364" y="-2" relative="1" as="geometry">
-            <mxPoint as="offset" />
+            <mxPoint x="26" y="-2" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="VyvOBXi4zYoO4qcPIi6Q-1" value="Użytkownik z ograniczonymi uprawnieniami" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
-          <mxGeometry x="120" y="330" width="120" height="60" as="geometry" />
+          <mxGeometry x="50" y="330" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="zY-tMj56ANNCXmde_FCD-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=light-dark(#000000,#000000);" edge="1" parent="1" source="zY-tMj56ANNCXmde_FCD-1" target="zY-tMj56ANNCXmde_FCD-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-1" value="&quot;/bin/bash -p&quot;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-10" value="&amp;nbsp;tryb poleceń" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-9">
+          <mxGeometry x="-0.3091" y="-4" relative="1" as="geometry">
+            <mxPoint x="12" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zY-tMj56ANNCXmde_FCD-1" value="nano" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
           <mxGeometry x="370" y="320" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-3" value="Proces z euid=0, czyli uprawnieniami administratora" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f0a30a;fontColor=#000000;strokeColor=#BD7000;" vertex="1" parent="1">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-3" value="Powłoka root" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f0a30a;fontColor=#000000;strokeColor=#BD7000;" vertex="1" parent="1">
           <mxGeometry x="600" y="300" width="120" height="120" as="geometry" />
         </mxCell>
         <mxCell id="zY-tMj56ANNCXmde_FCD-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=light-dark(#000000,#000000);" edge="1" parent="1" source="zY-tMj56ANNCXmde_FCD-4" target="zY-tMj56ANNCXmde_FCD-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="zY-tMj56ANNCXmde_FCD-6" value="(bit SUID=1)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-5">
+        <mxCell id="zY-tMj56ANNCXmde_FCD-6" value="dodanie NOPASSWD" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zY-tMj56ANNCXmde_FCD-5">
           <mxGeometry x="0.22" y="1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
